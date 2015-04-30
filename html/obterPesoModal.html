@@ -12,7 +12,8 @@
 
             <div class="modal-body">
                 <center>
-                    <h1 id="pesoAtual">17.890 Kg</h1>
+                    <h1><span id="pesoAtual">Carregando...</span></h1>
+                    <h3 id="statusAtual"></h3>
                 </center>
                 <dix class="row">
                     <div class="placa form-group col-sm-12">
@@ -22,6 +23,17 @@
                         <input class="form-control" type="text" id="placa" name="placa" pattern="[a-zA-Z]{3}[0-9]{4}" maxlength="7" placeholder="Placa"></input>
                     </div>
                 </dix>
+                <div class="row pesoInicial hidden">
+                    <div class="col-sm-12">
+                        <div class="pesoInicial form-group col-sm-12">
+                            <label class="control-label" id="pesoInicialLabel" for="pesoInicial">
+                                Peso Inicial
+                            </label>
+                            <input class="form-control" type="text" id="pesoInicial" name="pesoInicial" placeholder="Peso Inicial" readonly></input>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <div class="modal-footer">

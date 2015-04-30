@@ -1,5 +1,5 @@
 {
-    "name": "γBalança",
+    "name": "Gammasoft - Balança Rodoviária",
     "description": "Integração com o Gammasoft Balança",
     "version": "1.0.0",
     "content_scripts": [{
@@ -12,11 +12,13 @@
         "js": [
             "js/jquery.min.js",
             "js/bootstrap.min.js",
+            "js/moment.min.js",
             "content_script.js"
         ]
     }],
     "web_accessible_resources": [
-        "html/obterPesoModal.html"
+        "html/obterPesoModal.html",
+        "html/historicoDePesagens.html"
     ],
     "permissions": [
         "http://*/*",
@@ -26,8 +28,6 @@
     ],
     "background": {
         "scripts": [
-            "js/jquery.min.js",
-            "js/bootstrap.min.js",
             "background.js"
         ]
     },
