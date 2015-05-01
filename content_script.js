@@ -1,9 +1,12 @@
+var obterPesoModalHtml,
+    historicoDePesagensHtml;
+
 $.get(chrome.extension.getURL('html/obterPesoModal.html'), function(data) {
-    $(data).appendTo('body');
+    obterPesoModalHtml = data;
 });
 
 $.get(chrome.extension.getURL('html/historicoDePesagens.html'), function(data) {
-    $(data).appendTo('body');
+    historicoDePesagensHtml = data;
 });
 
 function formatarPlaca(texto) {
@@ -12,16 +15,19 @@ function formatarPlaca(texto) {
 }
 
 var elementoSelecionado = null,
-    baseUrl = 'http://127.0.0.1:7070',
+    baseUrl = 'http://127.0.0.1:7070', // TODO: Ler da configuração
     deveCarregarPeso = false,
     acoes = {};
 
 acoes.registrarEntrada = function() {
-    var $modal = $('#obterPesoModal'),
+    var $modal = $(obterPesoModalHtml),
+        $motorista = $modal.find('#motorista'),
         $placa = $modal.find('#placa');
 
     $placa.val('');
     $placa.prop('readonly', false);
+    $motorista.val('');
+    $motorista.prop('readonly', false);
     $modal.find('input#pesoInicial').val('');
     $modal.find('.row.pesoInicial').addClass('hidden');
 
@@ -48,12 +54,13 @@ acoes.registrarEntrada = function() {
     }, 333);
 
     $modal.one('show.bs.modal', function() {
-        $modal.find('button#registrarPeso').one('click', function(e) {
+        $modal.find('button#registrarPeso').on('click', function(e) {
             var post = $.ajax({
                 url: baseUrl + '/tickets',
                 type: 'POST',
                 data: {
-                    placa: $modal.find('#placa').val()
+                    motorista: $modal.find('input#motorista').val(),
+                    placa: $modal.find('input#placa').val()
                 }
             });
 
@@ -64,11 +71,10 @@ acoes.registrarEntrada = function() {
                 });
 
                 $modal.modal('hide');
-                alert('Peso registrado com sucesso!');
             });
 
-            post.fail(function() {
-                alert('Houve um erro registrando o peso!');
+            post.fail(function(err) {
+                alert(err.responseJSON.message);
             });
         });
     });
@@ -92,13 +98,17 @@ acoes.registrarEntrada = function() {
 }
 
 acoes.registrarSaida = function registrarSaida(ticket) {
-    var $modal = $('#obterPesoModal'),
+    var $modal = $(obterPesoModalHtml),
+        $motorista = $modal.find('#motorista'),
         $placa = $modal.find('#placa');
 
     $modal.find('input#pesoInicial').val(ticket.pesoInicial + 'Kg');
     $modal.find('.row.pesoInicial').removeClass('hidden');
     $placa.val(formatarPlaca(ticket.placa));
     $placa.prop('readonly', true);
+    $motorista.val(ticket.motorista);
+    $motorista.prop('readonly', true);
+
 
     var poolId = setInterval(function() {
         var get = $.getJSON(baseUrl + '/peso');
@@ -113,7 +123,7 @@ acoes.registrarSaida = function registrarSaida(ticket) {
     }, 333);
 
     $modal.one('show.bs.modal', function() {
-        $modal.find('button#registrarPeso').one('click', function(e) {
+        $modal.find('button#registrarPeso').on('click', function(e) {
             var put = $.ajax({
                 url: baseUrl + '/tickets/' + ticket.id,
                 type: 'PUT'
@@ -121,7 +131,26 @@ acoes.registrarSaida = function registrarSaida(ticket) {
 
             put.done(function(ticket) {
                 if(elementoSelecionado) {
-                    $(elementoSelecionado).val(ticket.pesoLiquido);
+                    // Código específico do GammaERP V
+
+                    var pesoEmToneladas = (ticket.pesoLiquido / 1000).toString().replace('.', ','),
+                        $motorista = $('input#motorista'),
+                        $modalidadeDoFrete = $('select#modalidadeDoFrete');
+
+                    $modalidadeDoFrete.val('porContaDoDestinatario');
+                    $motorista.val(ticket.motorista);
+                    $(elementoSelecionado).val(pesoEmToneladas);
+
+                    var changeEvent = new Event('change', {
+                        'bubbles': true,
+                        'cancelable': false
+                    });
+
+                    elementoSelecionado.dispatchEvent(changeEvent);
+                    $modalidadeDoFrete.get(0).dispatchEvent(changeEvent);
+                    $motorista.get(0).dispatchEvent(changeEvent);
+
+                    // Código específico do GammaERP ^
                 }
 
                 window.open(baseUrl + '/tickets/' + ticket.id + '/pdf');
@@ -132,12 +161,10 @@ acoes.registrarSaida = function registrarSaida(ticket) {
                 });
 
                 $modal.modal('hide');
-                alert('Peso registrado com sucesso!');
             });
 
-            put.fail(function() {
-                $modal.modal('hide');
-                alert('Houve um erro registrando o peso!');
+            put.fail(function(err) {
+                alert(err.responseJSON.message);
             });
         });
     });
@@ -161,7 +188,7 @@ acoes.registrarSaida = function registrarSaida(ticket) {
 }
 
 acoes.exibirHistoricoDePesagens = function() {
-    var $modal = $('#historicoDePesagensModal'),
+    var $modal = $(historicoDePesagensHtml),
         $tbody = $modal.find('table#historicoDePesagens tbody');
 
     $tbody.empty();
@@ -171,18 +198,24 @@ acoes.exibirHistoricoDePesagens = function() {
         get.done(function(tickets) {
             tickets.forEach(function(ticket) {
                 var $tr = $('<tr />');
+
+                if(!ticket.pesoFinal) {
+                    $tr.addClass('danger');
+                }
+
                 $tr.append($('<td />').html(ticket.id));
                 $tr.append($('<td />').html(formatarPlaca(ticket.placa)));
-                $tr.append($('<td />').html(moment(ticket.dataDeEntrada).format('DD/MM/YYYY HH:mm')));
+                $tr.append($('<td />').html(ticket.motorista));
+                $tr.append($('<td />').html(moment(ticket.dataDeEntrada).format('HH:mm')));
                 $tr.append($('<td />').html(ticket.pesoInicial + 'Kg'));
-                $tr.append($('<td />').html(ticket.dataDeSaida && moment(ticket.dataDeSaida).format('DD/MM/YYYY HH:mm')));
+                $tr.append($('<td />').html(ticket.dataDeSaida && moment(ticket.dataDeSaida).format('HH:mm')));
                 $tr.append($('<td />').html(ticket.pesoFinal && ticket.pesoFinal + 'Kg'));
                 $tr.append($('<td />').append($('<strong />').html(ticket.pesoFinal && (ticket.pesoFinal - ticket.pesoInicial) + 'Kg')));
 
                 if(ticket.pesoFinal) {
-                    $tr.append($('<td />').append($('<a href="' + baseUrl + '/tickets/' + ticket.id + '/pdf" target="_blank">EXIBIR TICKET</a>')));
+                    $tr.append($('<td />').append($('<a href="' + baseUrl + '/tickets/' + ticket.id + '/pdf" target="_blank">TICKET</a>')));
                 } else {
-                    var $registrarSaida = $('<a href="#">REGISTRAR SAÍDA</a>');
+                    var $registrarSaida = $('<a href="#">SAÍDA</a>');
                     $registrarSaida.bind('click', function(e) {
                         e.preventDefault();
 
@@ -199,8 +232,8 @@ acoes.exibirHistoricoDePesagens = function() {
             });
         });
 
-        get.fail(function() {
-            alert('Houve um erro buscando o histórico de pesagens!');
+        get.fail(function(err) {
+            alert(err.responseJSON.message);
         });
     });
 

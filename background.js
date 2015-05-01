@@ -17,7 +17,8 @@ chrome.contextMenus.create({
     parentId: 'raiz',
     title: 'Registrar Entrada',
     contexts: [
-        'page'
+        'page',
+        'editable'
     ],
     onclick: function(info, tab) {
         chrome.tabs.sendRequest(tab.id, {
@@ -31,7 +32,8 @@ chrome.contextMenus.create({
     parentId: 'raiz',
     title: 'Exibir Histórico',
     contexts: [
-        'page'
+        'page',
+        'editable'
     ],
     onclick: function(info, tab) {
         chrome.tabs.sendRequest(tab.id, {
@@ -40,18 +42,57 @@ chrome.contextMenus.create({
     }
 });
 
-var acoes = {};
+chrome.contextMenus.create({
+    id: 'patio',
+    parentId: 'raiz',
+    title: 'Pátio',
+    contexts: [
+        'page',
+        'editable'
+    ],
+    onclick: function(info, tab) {
+        if(Object.keys(patioIds).length === 0) {
+            alert('O pátio está vazio neste momento!');
+        }
+    }
+});
+
+chrome.contextMenus.create({
+    id: 'limparPatio',
+    parentId: 'raiz',
+    title: 'Limpar',
+    contexts: [
+        'page',
+        'editable'
+    ],
+    onclick: function(info, tab) {
+        if(confirm('Deseja realmente limpar as entradas?')) {
+            for(var id in patioIds){
+                if(patioIds.hasOwnProperty(id)) {
+                    chrome.contextMenus.remove(id);
+                    delete patioIds[id];
+                }
+            }
+        }
+    }
+});
+
+var acoes = {},
+    patioIds = {};
 
 acoes.ticketInserido = function adicionarNovoMenuDeContexto(request, sender, sendResponse) {
-    var ticket = request.dados;
+    var ticket = request.dados,
+        id = 'ticket' + ticket.id;
+
+    patioIds[id] = true;
 
     chrome.contextMenus.create({
-        id: 'ticket' + ticket.id,
-        parentId: 'raiz',
-        title: formatarPlaca(ticket.placa) + ' (' + ticket.pesoInicial + ' Kg)',
+        id: id,
+        parentId: 'patio',
+        title: ticket.motorista + ' - ' + formatarPlaca(ticket.placa) + ' - ' + ticket.pesoInicial + ' Kg',
         contexts: [
             'editable',
-            'page' // TODO: Excluir depois
+            'page'
         ],
         onclick: function(info, tab) {
             chrome.tabs.sendRequest(tab.id, {
@@ -63,8 +104,11 @@ acoes.ticketInserido = function adicionarNovoMenuDeContexto(request, sender, sen
 }
 
 acoes.ticketFinalizado = function(request, sender, sendResponse) {
-    var ticketId = request.dados;
-    chrome.contextMenus.remove('ticket' + ticketId);
+    var ticketId = request.dados,
+        id = 'ticket' + ticketId;
+
+    delete patioIds[id];
+    chrome.contextMenus.remove(id);
 }
 
 chrome.runtime.onMessage.addListener(function(acao, sender, sendResponse) {
