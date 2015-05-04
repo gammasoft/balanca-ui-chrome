@@ -24,6 +24,11 @@
         "tabs",
         "storage"
     ],
+    "icons": {
+        "16": "gamma.ico",
+        "24": "gamma.ico",
+        "48": "gamma.ico"
+    },
     "options_ui": {
         "page": "html/opcoes.html",
         "chrome_style": true
