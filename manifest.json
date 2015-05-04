@@ -21,8 +21,13 @@
         "http://*/*",
         "https://*/*",
         "contextMenus",
-        "tabs"
+        "tabs",
+        "storage"
     ],
+    "options_ui": {
+        "page": "html/opcoes.html",
+        "chrome_style": true
+    },
     "background": {
         "scripts": [
             "background.js"

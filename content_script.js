@@ -15,9 +15,35 @@ function formatarPlaca(texto) {
 }
 
 var elementoSelecionado = null,
-    baseUrl = 'http://127.0.0.1:7070', // TODO: Ler da configuração
+    baseUrl,
     deveCarregarPeso = false,
     acoes = {};
+
+chrome.storage.sync.get(function(opcoes) {
+    var ipDaBalanca = opcoes.ipDaBalanca;
+
+    if(!ipDaBalanca) {
+        alert([
+            'Você precisa configurar o ip da balança rodoviária',
+            'para começar a usar a integração'
+        ].join(' '));
+    }
+
+    baseUrl = 'http://' + ipDaBalanca;
+});
+
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+    if(namespace !== 'sync') {
+        return;
+    }
+
+    for (key in changes) {
+        if(key === 'ipDaBalanca') {
+            var storageChange = changes[key];
+            baseUrl = 'http://' + storageChange.newValue;
+        }
+    }
+});
 
 acoes.registrarEntrada = function() {
     var $modal = $(obterPesoModalHtml),
@@ -108,7 +134,6 @@ acoes.registrarSaida = function registrarSaida(ticket) {
     $placa.prop('readonly', true);
     $motorista.val(ticket.motorista);
     $motorista.prop('readonly', true);
-
 
     var poolId = setInterval(function() {
         var get = $.getJSON(baseUrl + '/peso');
@@ -243,7 +268,7 @@ acoes.exibirHistoricoDePesagens = function() {
     });
 }
 
-document.addEventListener("mousedown", function(event) {
+document.addEventListener('mousedown', function(event) {
     if(event.button !== 2) {
         return;
     }
