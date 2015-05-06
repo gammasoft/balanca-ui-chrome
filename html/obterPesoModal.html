@@ -1,5 +1,5 @@
 <div class="modal fade" id="obterPesoModal" tabindex="-1" role="dialog" aria-labelledby="obterPesoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm">
+    <div class="modal-dialog modal-md">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">
@@ -15,28 +15,46 @@
                     <h1><span id="pesoAtual">Carregando...</span></h1>
                     <h3 id="statusAtual"></h3>
                 </center>
-                <div class="row">
-                    <div class="motorista form-group col-sm-12">
+                <div class="row" style="margin-top: 25px;">
+                    <div class="motorista form-group col-sm-6">
                         <label class="control-label" id="motoristaLabel" for="motorista">
-                            Motorista
+                            Motorista*
                         </label>
-                        <input class="form-control" maxlength="50" type="text" id="motorista" name="motorista" placeholder="Motorista"></input>
+                        <input class="form-control" maxlength="50" type="text" id="motorista" name="motorista" placeholder="Motorista*"></input>
+                    </div>
+                    <div class="placa form-group col-sm-6">
+                        <label class="control-label" id="placaLabel" for="placa">
+                            Placa*
+                        </label>
+                        <input class="form-control" type="text" id="placa" name="placa" pattern="[a-zA-Z]{3}[0-9]{4}" maxlength="7" placeholder="Placa*"></input>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="placa form-group col-sm-12">
-                        <label class="control-label" id="placaLabel" for="placa">
-                            Placa
+                    <div class="cliente form-group col-sm-6">
+                        <label class="control-label" id="clienteLabel" for="cliente">
+                            Cliente
                         </label>
-                        <input class="form-control" type="text" id="placa" name="placa" pattern="[a-zA-Z]{3}[0-9]{4}" maxlength="7" placeholder="Placa"></input>
+                        <input class="form-control" maxlength="50" type="text" id="cliente" name="cliente" placeholder="Cliente"></input>
+                    </div>
+                    <div class="produto form-group col-sm-6">
+                        <label class="control-label" id="produtoLabel" for="produto">
+                            Produto
+                        </label>
+                        <input class="form-control" type="text" id="produto" name="produto" placeholder="Produto"></input>
                     </div>
                 </div>
                 <div class="row pesoInicial hidden">
-                    <div class="pesoInicial form-group col-sm-12">
+                    <div class="pesoInicial form-group col-sm-6">
                         <label class="control-label" id="pesoInicialLabel" for="pesoInicial">
                             Peso Inicial
                         </label>
-                        <input class="form-control" type="text" id="pesoInicial" name="pesoInicial" placeholder="Peso Inicial" readonly></input>
+                        <input class="form-control" maxlength="50" type="text" id="pesoInicial" name="pesoInicial" placeholder="Peso Inicial" readonly></input>
+                    </div>
+                    <div class="pesoLiquido form-group col-sm-6">
+                        <label class="control-label" id="pesoLiquidoLabel" for="pesoLiquido">
+                            Peso Líquido
+                        </label>
+                        <input class="form-control" type="text" id="pesoLiquido" name="pesoLiquido" placeholder="Peso Líquido" readonly></input>
                     </div>
                 </div>
 

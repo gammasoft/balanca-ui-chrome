@@ -1,9 +1,9 @@
 function salvar() {
-    chrome.storage.sync.set({
+    chrome.storage.local.set({
         ipDaBalanca: document.getElementById('ipDaBalanca').value
     }, function() {
         var status = document.getElementById('status');
-        status.textContent = 'Configurações salvas!';
+        status.textContent = 'Ok!';
 
         setTimeout(function() {
             status.textContent = '';
@@ -12,7 +12,7 @@ function salvar() {
 }
 
 function restaurar() {
-    chrome.storage.sync.get(function(opcoes) {
+    chrome.storage.local.get(function(opcoes) {
         document.getElementById('ipDaBalanca').value = opcoes.ipDaBalanca || '';
     });
 }
